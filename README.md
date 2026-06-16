@@ -1,3 +1,6 @@
+<img width="1510" height="854" alt="截屏2026-06-16 14 10 32" src="https://github.com/user-attachments/assets/e3c167c3-c8fe-4e8e-8da0-0fb3e6cd979a" />
+
+
 # 汇佳学生论坛 (Huijia Student Forum)
 
 一个为北京市私立汇佳学校学生设计的轻量级校园论坛，支持学号注册、实名/匿名双账号、表白墙审核、管理员封禁等核心功能。
