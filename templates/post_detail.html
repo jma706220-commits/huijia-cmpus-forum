@@ -1,0 +1,113 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="row">
+    <div class="col-md-8 offset-md-2">
+        <div class="mb-3">
+            <a href="{{ url_for('view_section', section_name=post.section) }}" class="text-decoration-none">
+                ← 返回 {{ sections[post.section] }}
+            </a>
+        </div>
+
+        <!-- 帖子内容卡片 -->
+        <div class="card">
+            <div class="card-body">
+                <div class="d-flex justify-content-between align-items-start">
+                    <h2>{{ post.title }}</h2>
+                    {% if current_user.is_authenticated and (current_user.id == post.user_id or current_user.is_admin) %}
+                        <a href="{{ url_for('delete_post', post_id=post.id) }}" class="btn btn-danger btn-sm" onclick="return confirm('确定删除这篇帖子吗？')">
+                            <i class="fas fa-trash"></i> 删除帖子
+                        </a>
+                    {% endif %}
+                </div>
+                <p class="post-meta">
+                    <i class="fas fa-user"></i> {{ post.author.get_display_name() }}
+                    {% if post.author.account_type == 'real' %}
+                        <i class="fas fa-check-circle text-primary" title="实名认证"></i>
+                    {% else %}
+                        <i class="fas fa-user-secret text-secondary" title="匿名用户"></i>
+                    {% endif %}
+                    | <i class="fas fa-clock"></i> {{ post.created_at.strftime('%Y-%m-%d %H:%M') }}
+                </p>
+                <hr>
+                <p style="white-space: pre-wrap;">{{ post.content }}</p>
+
+                <!-- 附件显示区域 -->
+                {% if post.attachments %}
+                    <hr>
+                    <h5><i class="fas fa-paperclip"></i> 附件</h5>
+                    <ul class="list-unstyled">
+                        {% for file in post.attachments %}
+                            <li class="mb-2">
+                                {% set ext = file.split('.')[-1].lower() %}
+                                {% if ext in ['jpg', 'jpeg', 'png', 'gif', 'webp'] %}
+                                    <div class="mb-1">
+                                        <img src="{{ url_for('static', filename='uploads/' + file) }}" class="img-fluid rounded" style="max-width: 100%; max-height: 300px;">
+                                    </div>
+                                    <a href="{{ url_for('static', filename='uploads/' + file) }}" class="btn btn-sm btn-outline-secondary" download>
+                                        <i class="fas fa-download"></i> 下载图片
+                                    </a>
+                                {% else %}
+                                    <a href="{{ url_for('static', filename='uploads/' + file) }}" class="btn btn-sm btn-outline-secondary" download>
+                                        <i class="fas fa-file"></i> {{ file }}
+                                    </a>
+                                {% endif %}
+                            </li>
+                        {% endfor %}
+                    </ul>
+                {% endif %}
+            </div>
+        </div>
+
+        <!-- 评论列表 -->
+        <div class="card mt-4">
+            <div class="card-header">
+                <h5><i class="fas fa-comments"></i> 评论 ({{ comments|length }})</h5>
+            </div>
+            <div class="card-body">
+                {% for comment in comments %}
+                    <div class="mb-3 pb-3 {% if not loop.last %}border-bottom{% endif %}">
+                        <div class="d-flex justify-content-between align-items-start">
+                            <div>
+                                <strong>{{ comment.author.get_display_name() }}</strong>
+                                {% if comment.author.account_type == 'real' %}
+                                    <i class="fas fa-check-circle text-primary" title="实名认证"></i>
+                                {% endif %}
+                                <span class="text-muted ms-2">{{ comment.created_at.strftime('%Y-%m-%d %H:%M') }}</span>
+                            </div>
+                            {% if current_user.is_authenticated and (current_user.id == comment.user_id or current_user.is_admin) %}
+                                <a href="{{ url_for('delete_comment', comment_id=comment.id) }}" class="btn btn-sm btn-outline-danger" onclick="return confirm('确定删除这条评论吗？')">
+                                    <i class="fas fa-trash"></i> 删除
+                                </a>
+                            {% endif %}
+                        </div>
+                        <p class="mt-2">{{ comment.content }}</p>
+                    </div>
+                {% else %}
+                    <p class="text-muted">还没有评论，抢个沙发吧！</p>
+                {% endfor %}
+            </div>
+        </div>
+
+        <!-- 发表评论 -->
+        {% if current_user.is_authenticated %}
+            <div class="card mt-4">
+                <div class="card-header">
+                    <h5><i class="fas fa-reply"></i> 发表评论</h5>
+                </div>
+                <div class="card-body">
+                    <form method="POST" action="{{ url_for('add_comment', post_id=post.id) }}">
+                        <div class="mb-3">
+                            <textarea name="content" rows="3" class="form-control" required placeholder="写下你的评论..."></textarea>
+                        </div>
+                        <button type="submit" class="btn btn-primary">提交评论</button>
+                    </form>
+                </div>
+            </div>
+        {% else %}
+            <div class="alert alert-info mt-4">
+                <a href="{{ url_for('login') }}">登录</a> 后可以发表评论
+            </div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}

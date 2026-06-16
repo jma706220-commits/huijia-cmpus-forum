@@ -1,0 +1,42 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="row">
+    <div class="col-md-8 offset-md-2">
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <h2>{{ section_title }}</h2>
+            <a href="/new-post" class="btn btn-primary">+ 发布新帖子</a>
+        </div>
+
+        {% if posts %}
+            {% for post in posts %}
+                <div class="card">
+                    <div class="card-body">
+                        <div class="d-flex justify-content-between align-items-start">
+                            <h5>
+                                <a href="/post/{{ post.id }}" class="post-title">{{ post.title }}</a>
+                            </h5>
+                            {% if current_user.is_authenticated and (current_user.id == post.user_id or current_user.is_admin) %}
+                                <a href="/delete-post/{{ post.id }}" class="btn btn-sm btn-danger" onclick="return confirm('确定删除吗？')">删除</a>
+                            {% endif %}
+                        </div>
+                        <p class="post-meta">
+    <i class="fas fa-user"></i> {{ post.author.get_display_name() }}
+    {% if post.author.account_type == 'real' %}
+        <i class="fas fa-check-circle text-primary"></i>
+    {% endif %}
+    · <i class="fas fa-clock"></i> {{ post.created_at.strftime('%Y-%m-%d %H:%M') }}
+    · <i class="fas fa-comment"></i> {{ post.comments|length }} 条评论
+</p>
+                        <p>{{ post.content[:150] }}{% if post.content|length > 150 %}...{% endif %}</p>
+                        <a href="/post/{{ post.id }}" class="btn btn-sm btn-outline-primary">阅读全文 →</a>
+                    </div>
+                </div>
+            {% endfor %}
+        {% else %}
+            <div class="alert alert-info">
+                还没有帖子，<a href="/new-post">点此发布第一个帖子</a>
+            </div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}

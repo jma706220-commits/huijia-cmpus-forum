@@ -1,0 +1,56 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="row">
+    <div class="col-md-6 offset-md-3">
+        <div class="card">
+            <div class="card-header">
+                <h4><i class="fas fa-sign-in-alt"></i> 登录</h4>
+            </div>
+            <div class="card-body">
+                <form method="POST">
+                    <div class="mb-3">
+                        <label class="form-label">学号</label>
+                        <input type="text" name="student_id" class="form-control" placeholder="如：29rentaowei" required>
+                        <small class="text-muted">学号格式：前两位（26-31）+ 姓名全拼小写</small>
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label">账号类型</label>
+                        <select name="account_type" class="form-select" required>
+                            <option value="real">实名账号</option>
+                            <option value="anonymous">匿名账号</option>
+                        </select>
+                        <small class="text-muted">
+                            实名账号：发帖显示真实姓名<br>
+                            匿名账号：发帖显示"匿名用户"
+                        </small>
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label">密码</label>
+                        <input type="password" name="password" class="form-control" required>
+                    </div>
+
+                    <button type="submit" class="btn btn-primary w-100">登录</button>
+                    <div class="text-center mt-3">
+                        <a href="/register">没有账号？去注册</a>
+                    </div>
+                </form>
+
+                <!-- 提示框 -->
+                <div class="alert alert-warning mt-4">
+                    <i class="fas fa-exclamation-triangle"></i>
+                    <strong>重要提示：</strong>
+                    <hr class="my-2">
+                    <ul class="mb-0 small">
+                        <li>请使用<strong class="text-danger">自己的真实学号</strong>登录，不得使用他人学号</li>
+                        <li>一个学号可以注册<strong>两个账号</strong>：一个实名 + 一个匿名</li>
+                        <li>请选择正确的账号类型登录</li>
+                        <li>冒用他人学号注册的账号将被<strong class="text-danger">封禁</strong></li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

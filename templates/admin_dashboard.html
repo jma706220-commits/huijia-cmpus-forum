@@ -1,0 +1,105 @@
+{% extends "base.html" %}
+{% block content %}
+
+<div class="row">
+    <div class="col-12">
+        <h2><i class="fas fa-cog"></i> 管理面板</h2>
+        <hr>
+
+        <!-- 待审核帖子卡片 -->
+        <div class="card mb-4 border-warning">
+            <div class="card-header bg-warning text-dark">
+                <h4><i class="fas fa-clock"></i> 待审核表白墙帖子</h4>
+            </div>
+            <div class="card-body">
+                <p>当前有 <strong>{{ pending_count }}</strong> 条帖子等待审核。</p>
+                <a href="{{ url_for('pending_posts') }}" class="btn btn-primary">进入审核</a>
+            </div>
+        </div>
+
+        <!-- 用户列表 -->
+        <h3 class="mt-4"><i class="fas fa-users"></i> 所有用户</h3>
+        <div class="table-responsive">
+            <table class="table table-striped table-bordered">
+                <thead class="table-dark">
+                    <tr>
+                        <th>ID</th>
+                        <th>学号</th>
+                        <th>用户名</th>
+                        <th>账号类型</th>
+                        <th>真实姓名</th>
+                        <th>注册时间</th>
+                        <th>管理员</th>
+                        <th>操作</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for user in users %}
+                    <tr>
+                        <td>{{ user.id }}</td>
+                        <td>{{ user.student_id or '-' }}</td>
+                        <td>{{ user.username }}</td>
+                        <td>
+                            {% if user.account_type == 'real' %}
+                                <span class="badge bg-primary">实名</span>
+                            {% else %}
+                                <span class="badge bg-secondary">匿名</span>
+                            {% endif %}
+                        </td>
+                        <td>{{ user.real_name or '-' }}</td>
+                        <td>{{ user.created_at.strftime('%Y-%m-%d') if user.created_at else '-' }}</td>
+                        <td>
+                            {% if user.is_admin %}
+                                <span class="badge bg-success">是</span>
+                            {% else %}
+                                <span class="badge bg-secondary">否</span>
+                            {% endif %}
+                        </td>
+                        <td>
+                            {% if not user.is_admin %}
+                                <a href="/admin/make-admin/{{ user.id }}" class="btn btn-warning btn-sm" onclick="return confirm('确定设为管理员吗？')">设为管理员</a>
+                            {% endif %}
+                            {% if user.id != current_user.id %}
+                                <a href="/admin/delete-user/{{ user.id }}" class="btn btn-danger btn-sm">删除账号</a>
+                            {% endif %}
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+
+        <!-- 帖子列表 -->
+        <h3 class="mt-5"><i class="fas fa-file-alt"></i> 所有帖子</h3>
+        <div class="table-responsive">
+            <table class="table table-striped table-bordered">
+                <thead class="table-dark">
+                    <tr>
+                        <th>ID</th>
+                        <th>标题</th>
+                        <th>作者</th>
+                        <th>版块</th>
+                        <th>发布时间</th>
+                        <th>操作</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for post in posts %}
+                    <tr>
+                        <td>{{ post.id }}</td>
+                        <td><a href="/post/{{ post.id }}">{{ post.title[:50] }}</a></td>
+                        <td>{{ post.author.get_display_name() if post.author else '未知' }}</td>
+                        <td>{{ post.section }}</td>
+                        <td>{{ post.created_at.strftime('%Y-%m-%d %H:%M') if post.created_at else '-' }}</td>
+                        <td>
+                            <a href="/admin/delete-post/{{ post.id }}" class="btn btn-danger btn-sm" onclick="return confirm('确定删除这篇帖子吗？')">删除</a>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+{% endblock %}

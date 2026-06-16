@@ -1,0 +1,399 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <title>汇佳学生论坛</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        /* ========== 全局样式 ========== */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            background: linear-gradient(135deg, #f5f7fa 0%, #eef2f7 100%);
+            min-height: 100vh;
+            font-family: 'Segoe UI', 'PingFang SC', Roboto, 'Helvetica Neue', sans-serif;
+        }
+
+        /* ========== 导航栏 ========== */
+        .navbar {
+            background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%) !important;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+        }
+
+        .navbar-brand {
+            font-weight: bold;
+            font-size: 1.6rem;
+            background: linear-gradient(135deg, #ff6b35, #feca57);
+            -webkit-background-clip: text;
+            background-clip: text;
+            color: transparent !important;
+        }
+
+        .nav-link {
+            font-weight: 500;
+            transition: all 0.3s;
+            position: relative;
+        }
+
+        .nav-link:hover {
+            transform: translateY(-3px);
+            color: #ff6b35 !important;
+        }
+
+        /* ========== 3D图标样式 ========== */
+        .icon-3d {
+            display: inline-block;
+            animation: float 3s ease-in-out infinite;
+            filter: drop-shadow(0 5px 10px rgba(0,0,0,0.2));
+        }
+
+        @keyframes float {
+            0% { transform: translateY(0px) rotate(0deg); }
+            50% { transform: translateY(-5px) rotate(3deg); }
+            100% { transform: translateY(0px) rotate(0deg); }
+        }
+
+        .nav-icon {
+            font-size: 1.1rem;
+            margin-right: 8px;
+            transition: all 0.3s;
+        }
+
+        .nav-link:hover .nav-icon {
+            transform: scale(1.2) rotate(5deg);
+        }
+
+        /* 版块图标颜色 */
+        .icon-heart { color: #ff6b6b; }
+        .icon-news { color: #4ecdc4; }
+        .icon-academic { color: #45b7d1; }
+        .icon-general { color: #feca57; }
+
+        /* ========== 公告栏样式 ========== */
+        .announcement-card {
+            background: linear-gradient(135deg, #fff9e6 0%, #fff5d6 100%);
+            border-left: 5px solid #ff6b35;
+            margin-bottom: 20px;
+            transition: all 0.3s;
+            border-radius: 15px;
+            box-shadow: 0 5px 20px rgba(0,0,0,0.08);
+        }
+
+        .announcement-card:hover {
+            transform: translateX(8px);
+            box-shadow: 0 10px 30px rgba(255,107,53,0.2);
+        }
+
+        .pinned-badge {
+            background: linear-gradient(135deg, #ff6b35, #ff4757);
+            color: white;
+            font-size: 0.7rem;
+            padding: 3px 10px;
+            border-radius: 20px;
+            margin-left: 10px;
+        }
+
+        /* ========== 卡片样式 ========== */
+        .card {
+            border: none;
+            border-radius: 20px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.08);
+            transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            overflow: hidden;
+        }
+
+        .card:hover {
+            transform: translateY(-8px);
+            box-shadow: 0 20px 40px rgba(0,0,0,0.15);
+        }
+
+        /* ========== 按钮样式 ========== */
+        .btn-primary {
+            background: linear-gradient(135deg, #ff6b35, #ff4757);
+            border: none;
+            border-radius: 30px;
+            padding: 8px 25px;
+            font-weight: 500;
+            transition: all 0.3s;
+        }
+
+        .btn-primary:hover {
+            transform: scale(1.05);
+            box-shadow: 0 5px 15px rgba(255,107,53,0.4);
+        }
+
+        .btn-outline-primary {
+            border-radius: 30px;
+            border: 2px solid #ff6b35;
+            color: #ff6b35;
+            transition: all 0.3s;
+        }
+
+        .btn-outline-primary:hover {
+            background: linear-gradient(135deg, #ff6b35, #ff4757);
+            border-color: transparent;
+            transform: scale(1.05);
+        }
+
+        /* ========== 版块卡片样式 ========== */
+        .section-card {
+            border: none;
+            border-radius: 25px;
+            overflow: hidden;
+            box-shadow: 0 15px 35px rgba(0,0,0,0.1);
+            transition: all 0.4s ease;
+        }
+
+        .section-card:hover {
+            transform: translateY(-10px);
+            box-shadow: 0 25px 50px rgba(0,0,0,0.2);
+        }
+
+        .section-header-bg {
+            padding: 18px 22px;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .section-header-bg::before {
+            content: '';
+            position: absolute;
+            top: -50%;
+            right: -50%;
+            width: 200%;
+            height: 200%;
+            background: radial-gradient(circle, rgba(255,255,255,0.1) 0%, transparent 70%);
+            animation: shine 8s infinite;
+        }
+
+        @keyframes shine {
+            0% { transform: translateX(-100%) translateY(-100%) rotate(45deg); }
+            100% { transform: translateX(100%) translateY(100%) rotate(45deg); }
+        }
+
+        .section-icon {
+            font-size: 1.8rem;
+            margin-right: 12px;
+            filter: drop-shadow(2px 4px 8px rgba(0,0,0,0.2));
+            transition: all 0.3s ease;
+            vertical-align: middle;
+        }
+
+        .section-card:hover .section-icon {
+            transform: scale(1.15) rotate(5deg);
+        }
+
+        .post-list {
+            min-height: 280px;
+        }
+
+        .post-item {
+            transition: all 0.3s;
+            padding: 10px;
+            border-radius: 12px;
+        }
+
+        .post-item:hover {
+            background: linear-gradient(135deg, #f8f9fa, #fff);
+            transform: translateX(5px);
+        }
+
+        .post-title {
+            color: #333;
+            text-decoration: none;
+            font-size: 1.1rem;
+            font-weight: 600;
+            transition: color 0.3s;
+        }
+
+        .post-title:hover {
+            color: #ff6b35;
+        }
+
+        .post-meta {
+            color: #888;
+            font-size: 0.8rem;
+        }
+
+        /* ========== 欢迎横幅 ========== */
+        .welcome-banner {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            border-radius: 25px;
+            color: white;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.2);
+            box-shadow: 0 15px 35px rgba(102, 126, 234, 0.3);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .welcome-banner::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255,255,255,0.2), transparent);
+            animation: shimmer 3s infinite;
+        }
+
+        @keyframes shimmer {
+            0% { left: -100%; }
+            100% { left: 100%; }
+        }
+
+        /* ========== 页脚 ========== */
+        .footer {
+            background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
+            color: white;
+            padding: 35px 0;
+            margin-top: 60px;
+            text-align: center;
+        }
+
+        /* ========== 其他 ========== */
+        .badge-admin {
+            background: linear-gradient(135deg, #ff6b35, #ff4757);
+            font-size: 0.65rem;
+            margin-left: 8px;
+            padding: 2px 8px;
+            border-radius: 20px;
+        }
+
+        .alert {
+            border-radius: 12px;
+            border-left: 4px solid;
+        }
+
+        @media (max-width: 768px) {
+            .post-list {
+                min-height: auto;
+            }
+            .section-icon {
+                font-size: 1.4rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- 导航栏 -->
+    <nav class="navbar navbar-expand-lg navbar-dark">
+        <div class="container">
+            <a class="navbar-brand" href="/">
+                <i class="fas fa-school"></i>
+                汇佳学生论坛
+            </a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <!-- 版块导航 -->
+                <ul class="navbar-nav me-auto">
+                    <li class="nav-item">
+                        <a class="nav-link" href="/section/confession">
+                            <i class="fas fa-heart nav-icon icon-heart icon-3d"></i> 表白墙
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="/section/news">
+                            <i class="fas fa-newspaper nav-icon icon-news icon-3d"></i> 校园新闻
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="/section/academic">
+                            <i class="fas fa-graduation-cap nav-icon icon-academic icon-3d"></i> 学术讨论
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="/section/general">
+                            <i class="fas fa-comments nav-icon icon-general icon-3d"></i> 综合讨论
+                        </a>
+                    </li>
+                </ul>
+                <!-- 用户菜单 -->
+                <ul class="navbar-nav">
+                    {% if current_user.is_authenticated %}
+                        {% if current_user.is_admin %}
+        <li class="nav-item">
+            <a class="nav-link" href="/admin/announcements">
+                <i class="fas fa-bullhorn"></i> 公告管理
+            </a>
+        </li>
+        <li class="nav-item">
+            <a class="nav-link" href="{{ url_for('pending_posts') }}">
+                <i class="fas fa-clock"></i> 待审核帖子
+            </a>
+        </li>
+        <li class="nav-item">
+            <a class="nav-link" href="/admin/dashboard">
+                <i class="fas fa-cog"></i> 管理面板
+            </a>
+        </li>
+                        {% endif %}
+                        <li class="nav-item">
+                            <a class="nav-link" href="/new-post">
+                                <i class="fas fa-pen"></i> 发帖
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="/logout">
+                                <i class="fas fa-sign-out-alt"></i> 退出
+                            </a>
+                        </li>
+                    {% else %}
+                        <li class="nav-item">
+                            <a class="nav-link" href="/login">
+                                <i class="fas fa-sign-in-alt"></i> 登录
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="/register">
+                                <i class="fas fa-user-plus"></i> 注册
+                            </a>
+                        </li>
+                    {% endif %}
+                </ul>
+            </div>
+        </div>
+    </nav>
+
+    <!-- 主内容区 -->
+    <div class="container" style="margin-top: 30px; margin-bottom: 30px;">
+        {% with messages = get_flashed_messages(with_categories=true) %}
+            {% if messages %}
+                {% for category, message in messages %}
+                    <div class="alert alert-{{ category }} alert-dismissible fade show" role="alert">
+                        <i class="fas fa-info-circle"></i> {{ message }}
+                        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                    </div>
+                {% endfor %}
+            {% endif %}
+        {% endwith %}
+
+        {% block content %}{% endblock %}
+    </div>
+
+    <!-- 页脚 -->
+   <div class="footer">
+    <div class="container">
+        <p class="mb-2">
+            <i class="fas fa-school"></i> 北京市私立汇佳学校 · 学生论坛
+        </p>
+        <p class="mb-0 small">
+            尊重 · 诚信 · 责任 · 创新 | 汇佳IB学习者社区
+        </p>
+        <!-- 新增联系管理员信息 -->
+        <p class="mt-3 mb-0 small" style="border-top: 1px solid rgba(255,255,255,0.2); padding-top: 10px;">
+            <i class="fas fa-envelope"></i> 如有问题请联系管理员：29majiale / 29rentaowei
+        </p>
+    </div>
+</div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>

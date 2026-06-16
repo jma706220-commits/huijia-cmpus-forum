@@ -1,0 +1,132 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="row">
+    <div class="col-md-6 offset-md-3">
+        <div class="card">
+            <div class="card-header">
+                <h4><i class="fas fa-user-plus"></i> 注册新账号</h4>
+            </div>
+            <div class="card-body">
+                <form method="POST" id="registerForm">
+                    <!-- 账号类型选择 -->
+                    <div class="mb-3">
+                        <label class="form-label">账号类型</label>
+                        <div class="form-check">
+                            <input class="form-check-input" type="radio" name="account_type" id="type_real" value="real" checked>
+                            <label class="form-check-label" for="type_real">
+                                <i class="fas fa-id-card"></i> 实名账号
+                                <small class="text-muted d-block">发帖显示真实姓名</small>
+                            </label>
+                        </div>
+                        <div class="form-check mt-2">
+                            <input class="form-check-input" type="radio" name="account_type" id="type_anonymous" value="anonymous">
+                            <label class="form-check-label" for="type_anonymous">
+                                <i class="fas fa-user-secret"></i> 匿名账号
+                                <small class="text-muted d-block">发帖显示"匿名用户"，保护隐私</small>
+                            </label>
+                        </div>
+                    </div>
+
+                    <!-- 实名账号专属字段 -->
+                    <div id="realFields">
+                        <div class="mb-3">
+                            <label class="form-label">真实姓名</label>
+                            <input type="text" name="real_name" class="form-control" placeholder="如：任韬玮" required>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">学号</label>
+                            <input type="text" name="student_id" id="student_id" class="form-control" placeholder="如：29rentaowei" required>
+                            <small class="text-muted">
+    学号格式：前两位（26/27/28/29/30/31）+ 姓名全拼（小写字母）<br>
+    示例：29zhangsan、30lisi
+</small>
+                        </div>
+                    </div>
+
+                    <!-- 匿名账号专属字段 -->
+                    <div id="anonymousFields" style="display: none;">
+                        <div class="mb-3">
+                            <label class="form-label">学号</label>
+                            <input type="text" name="student_id_anon" id="student_id_anon" class="form-control" placeholder="如：29rentaowei">
+                            <small class="text-muted">匿名账号也需要绑定学号，一个学号只能注册一次</small>
+                        </div>
+                    </div>
+
+                    <!-- 密码 -->
+                    <div class="mb-3">
+                        <label class="form-label">密码</label>
+                        <input type="password" name="password" class="form-control" required minlength="4">
+                        <small class="text-muted">至少4位</small>
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label">确认密码</label>
+                        <input type="password" name="confirm_password" class="form-control" required>
+                    </div>
+
+                    <button type="submit" class="btn btn-primary w-100">注册</button>
+                    <div class="text-center mt-3">
+                        <a href="/login">已有账号？去登录</a>
+                    </div>
+                </form>
+
+                <!-- 重要提示 -->
+                <div class="alert alert-warning mt-4">
+    <i class="fas fa-exclamation-triangle"></i>
+    <strong>重要提示：</strong>
+    <hr class="my-2">
+    <ul class="mb-0 small">
+        <li>请填写<strong class="text-danger">自己的真实学号</strong>，不得冒用他人学号</li>
+        <li>一个学号可以注册<strong class="text-success">两个账号</strong>：一个实名 + 一个匿名</li>
+        <li>冒用他人学号注册的账号将被<strong class="text-danger">封禁</strong></li>
+    </ul>
+</div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    // 账号类型切换
+    const typeReal = document.getElementById('type_real');
+    const typeAnonymous = document.getElementById('type_anonymous');
+    const realFields = document.getElementById('realFields');
+    const anonymousFields = document.getElementById('anonymousFields');
+    const realNameInput = document.querySelector('input[name="real_name"]');
+    const studentIdInput = document.querySelector('input[name="student_id"]');
+    const studentIdAnonInput = document.getElementById('student_id_anon');
+
+    function toggleFields() {
+        if (typeAnonymous.checked) {
+            realFields.style.display = 'none';
+            anonymousFields.style.display = 'block';
+            // 实名输入框不需要 required
+            if (realNameInput) realNameInput.removeAttribute('required');
+            if (studentIdInput) studentIdInput.removeAttribute('required');
+            // 匿名输入框需要 required
+            if (studentIdAnonInput) studentIdAnonInput.setAttribute('required', 'required');
+        } else {
+            realFields.style.display = 'block';
+            anonymousFields.style.display = 'none';
+            // 实名输入框需要 required
+            if (realNameInput) realNameInput.setAttribute('required', 'required');
+            if (studentIdInput) studentIdInput.setAttribute('required', 'required');
+            // 匿名输入框不需要 required
+            if (studentIdAnonInput) studentIdAnonInput.removeAttribute('required');
+        }
+    }
+
+    typeReal.addEventListener('change', toggleFields);
+    typeAnonymous.addEventListener('change', toggleFields);
+    toggleFields();
+
+    // 表单提交前，把匿名的学号赋值给 student_id
+    const form = document.getElementById('registerForm');
+    form.addEventListener('submit', function(e) {
+        if (typeAnonymous.checked) {
+            const anonStudentId = studentIdAnonInput.value;
+            if (studentIdInput) studentIdInput.value = anonStudentId;
+        }
+    });
+</script>
+{% endblock %}

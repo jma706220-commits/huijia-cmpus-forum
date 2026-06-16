@@ -1,0 +1,46 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="container">
+    <h2><i class="fas fa-clock"></i> 待审核表白墙帖子</h2>
+    <hr>
+    {% if pending %}
+        {% for post in pending %}
+        <div class="card mb-3">
+            <div class="card-body">
+                <h5>{{ post.title }}</h5>
+                <p class="text-muted">作者：{{ post.author.get_display_name() }} | 提交时间：{{ post.created_at.strftime('%Y-%m-%d %H:%M') }}</p>
+                <p>{{ post.content }}</p>
+                <form method="post" action="{{ url_for('approve_post', post_id=post.id) }}" style="display:inline;">
+                    <button type="submit" class="btn btn-success btn-sm">通过</button>
+                </form>
+                <button type="button" class="btn btn-danger btn-sm" data-bs-toggle="modal" data-bs-target="#rejectModal{{ post.id }}">拒绝</button>
+
+                <!-- 拒绝原因模态框 -->
+                <div class="modal fade" id="rejectModal{{ post.id }}" tabindex="-1">
+                    <div class="modal-dialog">
+                        <div class="modal-content">
+                            <form method="post" action="{{ url_for('reject_post', post_id=post.id) }}">
+                                <div class="modal-header">
+                                    <h5 class="modal-title">填写拒绝原因</h5>
+                                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                                </div>
+                                <div class="modal-body">
+                                    <textarea name="reason" class="form-control" rows="3" required placeholder="请输入拒绝原因..."></textarea>
+                                </div>
+                                <div class="modal-footer">
+                                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">取消</button>
+                                    <button type="submit" class="btn btn-danger">确认拒绝</button>
+                                </div>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        {% endfor %}
+    {% else %}
+        <div class="alert alert-info">暂无待审核帖子。</div>
+    {% endif %}
+    <a href="{{ url_for('admin_dashboard') }}" class="btn btn-secondary">返回管理面板</a>
+</div>
+{% endblock %}

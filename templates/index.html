@@ -1,0 +1,107 @@
+{% extends "base.html" %}
+{% block content %}
+
+<!-- 顶部欢迎横幅（紫蓝渐变+光效） -->
+<div class="welcome-banner text-center mb-4 p-4 rounded">
+    <h1><i class="fas fa-school"></i> 欢迎来到汇佳学生论坛</h1>
+    <p class="mb-0 mt-2">尊重 · 诚信 · 责任 · 创新 | IB学习者社区</p>
+</div>
+
+<!-- ========== 公告栏（完整显示） ========== -->
+{% if announcements %}
+<div class="announcement-section mb-5">
+    <div class="section-header d-flex align-items-center mb-3">
+        <i class="fas fa-bullhorn fs-3 me-2" style="color: #ff6b35;"></i>
+        <h3 class="mb-0">📢 校园公告</h3>
+    </div>
+    {% for ann in announcements %}
+        <div class="card announcement-card mb-3">
+            <div class="card-body">
+                <div class="d-flex align-items-center mb-2">
+                    <h5 class="mb-0">{{ ann.title }}</h5>
+                    {% if ann.is_pinned %}
+                        <span class="pinned-badge ms-2"><i class="fas fa-thumbtack"></i> 置顶</span>
+                    {% endif %}
+                </div>
+                <p class="post-meta mb-2">
+                    <i class="fas fa-user"></i> 汇佳官方 |
+                    <i class="fas fa-clock"></i> {{ ann.created_at.strftime('%Y-%m-%d %H:%M') }}
+                </p>
+                <hr class="my-2">
+                <p style="white-space: pre-wrap; font-size: 1rem; line-height: 1.6;">{{ ann.content }}</p>
+            </div>
+        </div>
+    {% endfor %}
+</div>
+{% endif %}
+
+<!-- ========== 4个版块（2x2网格布局 + 3D图标） ========== -->
+<h3 class="mb-4"><i class="fas fa-layer-group"></i> 讨论版块</h3>
+<div class="row">
+    {% for key, name in sections.items() %}
+        <div class="col-md-6 mb-4">
+            <div class="card h-100 section-card">
+                <!-- 版块头部（渐变背景+3D图标） -->
+                <div class="card-header section-header-bg" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white;">
+                    <h4 class="mb-0">
+                        {% if key == 'confession' %}
+                            <i class="fas fa-heart section-icon icon-3d"></i>
+                        {% elif key == 'news' %}
+                            <i class="fas fa-newspaper section-icon icon-3d"></i>
+                        {% elif key == 'academic' %}
+                            <i class="fas fa-graduation-cap section-icon icon-3d"></i>
+                        {% else %}
+                            <i class="fas fa-comments section-icon icon-3d"></i>
+                        {% endif %}
+                        {{ name }}
+                    </h4>
+                </div>
+                <!-- 版块内容（最新帖子列表） -->
+                <div class="card-body">
+                    {% if latest_posts[key] %}
+                        <div class="post-list">
+                            {% for post in latest_posts[key] %}
+                                <div class="post-item mb-3 pb-2 border-bottom">
+                                    <a href="/post/{{ post.id }}" class="post-title">
+                                        {{ post.title }}
+                                    </a>
+                                    <div class="post-meta small mt-1">
+                                        <i class="fas fa-user"></i> {{ post.author.username }}
+                                        <i class="fas fa-clock ms-2"></i> {{ post.created_at.strftime('%m-%d %H:%M') }}
+                                        <i class="fas fa-comment ms-2"></i> {{ post.comments|length }} 条回复
+                                    </div>
+                                </div>
+                            {% endfor %}
+                        </div>
+                    {% else %}
+                        <div class="text-center py-4">
+                            <i class="fas fa-comment-dots fa-2x text-muted mb-2"></i>
+                            <p class="text-muted mb-0">✨ 暂无帖子，来做第一个发帖的人吧！</p>
+                        </div>
+                    {% endif %}
+                </div>
+                <!-- 版块底部（进入版块按钮） -->
+                <div class="card-footer bg-transparent text-center">
+                    <a href="/section/{{ key }}" class="btn btn-outline-primary btn-sm">
+                        进入{{ name }} <i class="fas fa-arrow-right ms-1"></i>
+                    </a>
+                </div>
+            </div>
+        </div>
+    {% endfor %}
+</div>
+
+<!-- ========== 底部统计信息 ========== -->
+<div class="row mt-4">
+    <div class="col-12">
+        <div class="card text-center bg-light">
+            <div class="card-body">
+                <p class="mb-0">
+                    <i class="fas fa-users"></i> 汇聚佳学子 ·
+                    <i class="fas fa-comments"></i> 共建温暖社区
+                </p>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

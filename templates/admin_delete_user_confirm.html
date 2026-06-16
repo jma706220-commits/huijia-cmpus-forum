@@ -1,0 +1,38 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="row">
+    <div class="col-md-6 offset-md-3">
+        <div class="card">
+            <div class="card-header bg-danger text-white">
+                <h4><i class="fas fa-trash-alt"></i> 删除用户确认</h4>
+            </div>
+            <div class="card-body">
+                <p>您确定要删除以下用户吗？</p>
+                <ul>
+                    <li><strong>学号：</strong> {{ user.student_id }}</li>
+                    <li><strong>用户名：</strong> {{ user.username }}</li>
+                    <li><strong>账号类型：</strong> {% if user.account_type == 'real' %}实名{% else %}匿名{% endif %}</li>
+                </ul>
+                <p class="text-danger">此操作将永久删除该用户的所有帖子和评论，无法恢复！</p>
+                <form method="POST">
+                    <div class="mb-3">
+                        <label class="form-label">禁止重新注册天数（0表示不禁，1-7可选）</label>
+                        <select name="ban_days" class="form-select">
+                            <option value="0">不禁用注册</option>
+                            <option value="1">1天</option>
+                            <option value="2">2天</option>
+                            <option value="3">3天</option>
+                            <option value="4">4天</option>
+                            <option value="5">5天</option>
+                            <option value="6">6天</option>
+                            <option value="7">7天</option>
+                        </select>
+                    </div>
+                    <button type="submit" class="btn btn-danger">确认删除</button>
+                    <a href="{{ url_for('admin_dashboard') }}" class="btn btn-secondary">取消</a>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
