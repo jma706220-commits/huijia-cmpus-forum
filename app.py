@@ -14,22 +14,14 @@ from models import db, User, Announcement, Post, Comment, generate_anonymous_use
 
 app = Flask(__name__)
 app.config['SECRET_KEY'] = 'your-secret-key-change-this'
-
-# 数据库配置：Render 用 PostgreSQL，本地开发用 SQLite
-database_url = os.environ.get('DATABASE_URL')
-if database_url:
-    if database_url.startswith('postgres://'):
-        database_url = database_url.replace('postgres://', 'postgresql://', 1)
-else:
-    database_url = 'sqlite:///forum.db'
-
-app.config['SQLALCHEMY_DATABASE_URI'] = database_url
+app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///forum.db'
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 app.config['SQLALCHEMY_ENGINE_OPTIONS'] = {
     'pool_size': 10,
     'pool_recycle': 3600,
     'pool_pre_ping': True,
 }
+
 # ========== 文件上传配置 ==========
 UPLOAD_FOLDER = 'static/uploads'
 ALLOWED_EXTENSIONS = {'png', 'jpg', 'jpeg', 'gif', 'webp', 'pdf', 'txt', 'zip', 'rar', 'doc', 'docx', 'xls', 'xlsx'}
@@ -121,7 +113,7 @@ def index():
     for section_key in SECTIONS.keys():
         query = Post.query.filter_by(section=section_key)
         if section_key == 'confession':
-            query = query.filter_by(is_approved=True)
+            query = query.filter_by(is_approved=True)  # 只显示已通过的
         latest_posts[section_key] = query.order_by(Post.created_at.desc()).limit(5).all()
     return render_template('index.html',
                            sections=SECTIONS,
@@ -297,7 +289,7 @@ def new_post():
             section=section,
             user_id=current_user.id,
             is_approved=is_approved,
-            attachments=uploaded_files   # 存储路径列表
+            attachments=uploaded_files
         )
         db.session.add(post)
         db.session.commit()
@@ -312,9 +304,21 @@ def new_post():
 @app.route('/post/<int:post_id>')
 def post_detail(post_id):
     post = Post.query.get_or_404(post_id)
-    if post.section == 'confession' and not post.is_approved and not (current_user.is_authenticated and current_user.is_admin):
+    # 如果是已通过的帖子，直接显示
+    if post.is_approved:
+        pass
+    # 如果是被拒绝的帖子，只允许作者本人查看
+    elif post.rejection_reason is not None:
+        if current_user.is_authenticated and current_user.id == post.user_id:
+            pass  # 允许查看，模板会显示拒绝提示
+        else:
+            flash('该帖子已被拒绝，仅作者可查看', 'warning')
+            return redirect(url_for('index'))
+    # 如果是未审核（pending），非管理员不可见
+    elif not post.is_approved and not (current_user.is_authenticated and current_user.is_admin):
         flash('该帖子正在审核中，暂不可见', 'warning')
         return redirect(url_for('index'))
+    # 管理员可看所有
     comments = Comment.query.filter_by(post_id=post_id).order_by(Comment.created_at.asc()).all()
     return render_template('post_detail.html', post=post, comments=comments, sections=SECTIONS)
 
@@ -440,7 +444,11 @@ def delete_announcement(announcement_id):
 def admin_dashboard():
     posts = Post.query.order_by(Post.created_at.desc()).all()
     users = User.query.all()
-    pending_count = Post.query.filter_by(section='confession', is_approved=False).count()
+    pending_count = Post.query.filter_by(
+        section='confession',
+        is_approved=False,
+        rejection_reason=None
+    ).count()
     return render_template('admin_dashboard.html', posts=posts, users=users, pending_count=pending_count)
 
 @app.route('/admin/delete-post/<int:post_id>')
@@ -448,7 +456,6 @@ def admin_dashboard():
 @admin_required
 def admin_delete_post(post_id):
     post = Post.query.get_or_404(post_id)
-    # 删除附件文件
     for file in post.attachments or []:
         file_path = os.path.join(app.config['UPLOAD_FOLDER'], file)
         if os.path.exists(file_path):
@@ -492,7 +499,6 @@ def admin_delete_user(user_id):
         ban_days = int(request.form.get('ban_days', 0))
         student_id = user.student_id
 
-        # 删除用户（级联删除会自动删除其帖子和评论，但附件需要手动删除）
         for post in user.posts:
             for file in post.attachments or []:
                 file_path = os.path.join(app.config['UPLOAD_FOLDER'], file)
@@ -522,7 +528,12 @@ def admin_delete_user(user_id):
 @login_required
 @admin_required
 def pending_posts():
-    pending = Post.query.filter_by(section='confession', is_approved=False).order_by(Post.created_at.desc()).all()
+    # 只显示未被拒绝且未被通过的帖子
+    pending = Post.query.filter(
+        Post.section == 'confession',
+        Post.is_approved == False,
+        Post.rejection_reason.is_(None)  # 拒绝原因为空，即尚未处理
+    ).order_by(Post.created_at.desc()).all()
     return render_template('admin_pending.html', pending=pending)
 
 @app.route('/admin/approve-post/<int:post_id>', methods=['POST'])
@@ -532,6 +543,7 @@ def approve_post(post_id):
     post = Post.query.get_or_404(post_id)
     if post.section == 'confession' and not post.is_approved:
         post.is_approved = True
+        post.rejection_reason = None  # 清除可能的拒绝标记
         db.session.commit()
         flash('帖子已通过审核', 'success')
     else:
@@ -543,16 +555,10 @@ def approve_post(post_id):
 @admin_required
 def reject_post(post_id):
     post = Post.query.get_or_404(post_id)
-    reason = request.form.get('reason')
-    if post.section == 'confession' and not post.is_approved:
-        # 拒绝时删除附件
-        for file in post.attachments or []:
-            file_path = os.path.join(app.config['UPLOAD_FOLDER'], file)
-            if os.path.exists(file_path):
-                os.remove(file_path)
-        db.session.delete(post)
+    if post.section == 'confession' and not post.is_approved and post.rejection_reason is None:
+        post.rejection_reason = '如有问题请联系管理员（29majiale / 29rentaowei）'
         db.session.commit()
-        flash(f'已拒绝帖子，原因：{reason}', 'danger')
+        flash('已拒绝此帖，如有问题请联系管理员', 'danger')
     else:
         flash('操作无效', 'warning')
     return redirect(url_for('pending_posts'))

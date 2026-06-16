@@ -8,6 +8,14 @@
             </a>
         </div>
 
+        <!-- 拒绝提示（仅作者可见） -->
+        {% if post.rejection_reason and current_user.is_authenticated and current_user.id == post.user_id %}
+            <div class="alert alert-danger">
+                <i class="fas fa-exclamation-triangle"></i>
+                您的帖子已被拒绝。原因：{{ post.rejection_reason }}
+            </div>
+        {% endif %}
+
         <!-- 帖子内容卡片 -->
         <div class="card">
             <div class="card-body">
