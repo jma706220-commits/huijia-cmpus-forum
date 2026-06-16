@@ -14,14 +14,22 @@ from models import db, User, Announcement, Post, Comment, generate_anonymous_use
 
 app = Flask(__name__)
 app.config['SECRET_KEY'] = 'your-secret-key-change-this'
-app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///forum.db'
+
+# 数据库配置：Render 用 PostgreSQL，本地开发用 SQLite
+database_url = os.environ.get('DATABASE_URL')
+if database_url:
+    if database_url.startswith('postgres://'):
+        database_url = database_url.replace('postgres://', 'postgresql://', 1)
+else:
+    database_url = 'sqlite:///forum.db'
+
+app.config['SQLALCHEMY_DATABASE_URI'] = database_url
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 app.config['SQLALCHEMY_ENGINE_OPTIONS'] = {
     'pool_size': 10,
     'pool_recycle': 3600,
     'pool_pre_ping': True,
 }
-
 # ========== 文件上传配置 ==========
 UPLOAD_FOLDER = 'static/uploads'
 ALLOWED_EXTENSIONS = {'png', 'jpg', 'jpeg', 'gif', 'webp', 'pdf', 'txt', 'zip', 'rar', 'doc', 'docx', 'xls', 'xlsx'}
